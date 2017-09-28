@@ -58,7 +58,7 @@ def get_switchtab():
 		ntab = int(tab) - 1;
 		driver.switch_to_window(tabs[ntab]) 
 		return jsonify({'status': True, 'message': 'Switched to tab: #' + tab})  
-	return jsonify({'status': False, 'message': 'No Tab No. provided, use ?tab='})
+	return jsonify({'status': False, 'message': 'No Tab No. provided, use ?tab=', 'tabs': tabs})
 	
 @app.route('/open', methods=['GET'])
 def get_open():
