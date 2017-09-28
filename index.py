@@ -8,6 +8,7 @@ import sys
 
 app = Flask(__name__)
 driver = None
+tabs = None
 
 def validateDriver():
 	global driver
@@ -19,7 +20,6 @@ def validateDriver():
 		return {'status': False, 'message': 'Disconnected Driver'}
 	return {'status': True, 'message': 'Driver initiated'}
 
-
 @app.route('/status', methods=['GET'])
 def get_status():
 	return jsonify(validateDriver())
@@ -27,6 +27,7 @@ def get_status():
 @app.route('/init', methods=['GET'])
 def get_init():
 	global driver
+	global tabs
 	status = validateDriver();
 	if ( status['status'] is False ):
 		driver = webdriver.Chrome()
@@ -34,7 +35,31 @@ def get_init():
 		return jsonify({'status': True, 'message': 'Initialized'})
 	return jsonify({'status': True, 'message': 'Already Initiated'})
 	
+@app.route('/newtab', methods=['GET'])
+def get_newtab():
+	global driver
+	global tabs
+	status = validateDriver();
+	if ( status['status'] is False ):
+		return jsonify(status)
+	driver.execute_script('''window.open("", "_blank");''');
+	tabs = driver.window_handles
+	return jsonify({'status': True, 'message': 'New Tab Opened'})
 
+@app.route('/switchtab', methods=['GET'])
+def get_switchtab():
+	global driver
+	global tabs
+	status = validateDriver();
+	tab = request.args.get('tab')
+	if ( status['status'] is False ):
+		return jsonify(status)
+	if ( tab is not None ):
+		ntab = int(tab) - 1;
+		driver.switch_to_window(tabs[ntab]) 
+		return jsonify({'status': True, 'message': 'Switched to tab: #' + tab})  
+	return jsonify({'status': False, 'message': 'No Tab No. provided, use ?tab='})
+	
 @app.route('/open', methods=['GET'])
 def get_open():
 	status = validateDriver()
