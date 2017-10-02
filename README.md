@@ -2,12 +2,12 @@
 
 1. Install Selenium-python
 ```
-pip install selenium
+pip install selenium flask flask-ask requests
 ```
 
-2. Download driver and place it on same PATH as index.py.
+4. Download driver and place it on same PATH as index.py.
 
-3. Execute and enjoy
+5. Execute and enjoy
 ```
 py index.py
 ```
