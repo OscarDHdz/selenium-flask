@@ -6,7 +6,7 @@ import time
 import unidecode
 
 app = Flask(__name__)
-ask = Ask(app, "/")
+ask = Ask(app, "/webbrowser")
 
 
 @app.route('/')
