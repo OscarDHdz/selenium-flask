@@ -1,8 +1,13 @@
+# Flask = Framework para web service
+
+# Dependencias de Flask
 from flask import Flask
 from flask import jsonify
 from flask import request
+# Selenium dependencies
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+# Dependencia sys para poder usar print
 import sys
 
 
@@ -34,7 +39,7 @@ def get_init():
 		tabs = driver.window_handles
 		return jsonify({'status': True, 'message': 'Initialized'})
 	return jsonify({'status': True, 'message': 'Already Initiated'})
-	
+
 @app.route('/newtab', methods=['GET'])
 def get_newtab():
 	global driver
@@ -56,21 +61,21 @@ def get_switchtab():
 		return jsonify(status)
 	if ( tab is not None ):
 		ntab = int(tab) - 1;
-		driver.switch_to_window(tabs[ntab]) 
-		return jsonify({'status': True, 'message': 'Switched to tab: #' + tab})  
+		driver.switch_to_window(tabs[ntab])
+		return jsonify({'status': True, 'message': 'Switched to tab: #' + tab})
 	return jsonify({'status': False, 'message': 'No Tab No. provided, use ?tab=', 'tabs': tabs})
-	
+
 @app.route('/open', methods=['GET'])
 def get_open():
 	status = validateDriver()
 	site = request.args.get('site')
 	if ( site is None ):
-		return jsonify({'status': False, 'message': 'Missing site parameter'}) 
+		return jsonify({'status': False, 'message': 'Missing site parameter'})
 	if ( status['status'] is True ):
 		driver.get('http://' + site)
 		return jsonify({'status': True})
 	return jsonify(status)
-	
+
 @app.route('/close', methods=['GET'])
 def get_close():
 	global driver
@@ -84,7 +89,7 @@ def get_close():
 @app.route('/')
 def index():
     return "Hello, World!"
-	
-	
+
+
 if __name__ == '__main__':
     app.run(debug=True)
