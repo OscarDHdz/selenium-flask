@@ -8,6 +8,7 @@ import unidecode
 # Selenium dependencies
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 # Arguments
 import argparse
 import sys
@@ -15,11 +16,24 @@ import sys
 # Argument parser ----------------------------------------
 parser = argparse.ArgumentParser()
 parser.add_argument("--host", help="ADOP public IP")
+parser.add_argument("--user", help="ADOP username")
+parser.add_argument("--password", help="ADOP password")
 args = parser.parse_args()
+#Validations
 if args.host:
     print ("ADOP host:", args.host)
 else:
     print ("Missing [--host] flag:", args.host)
+    sys.exit(0)
+if args.user:
+    print ("ADOP user:", args.user)
+else:
+    print ("Missing [--user] flag:", args.user)
+    sys.exit(0)
+if args.password:
+    print ("ADOP password:", args.password)
+else:
+    print ("Missing [--password] flag:", args.password)
     sys.exit(0)
 
 sys.stdout.flush()
@@ -32,19 +46,21 @@ ask = Ask(app, "/platform")
 driver = None
 tabs = None
 ADOP_HOST = args.host
+ADOP_USER = args.user
+ADOP_PASS = args.password
 
 pages = {
-    'adop': {'page': 'http://{}/'.format(ADOP_HOST), 'tab': ''},
-    'jenkins': {'page': 'https://{}/jenkins'.format(ADOP_HOST), 'tab': ''},
-    'pipeline': {'page': 'http://{}/jenkins/job/MDC/job/DEMO/view/Java_Reference_Application/?auto_refresh=true'.format(ADOP_HOST), 'tab': ''},
-    'gerrit': {'page': 'http://{}/gerrit/#/admin/projects/MDC/DEMO/demo-base-spring-petclinic'.format(ADOP_HOST), 'tab': ''},
-    'projectdemo': {'page': 'http://{}'.format(ADOP_HOST), 'tab': ''},
-    'deploy': {'page': 'http://mdc_demo_ci.{}.nip.io/petclinic/ '.format(ADOP_HOST), 'tab': ''},
-    'prodA': {'page': 'http://mdc_demo_proda.{}.nip.io/petclinic/ '.format(ADOP_HOST), 'tab': ''},
-    'prodB': {'page': 'http://mdc_demo_prodb.{}.nip.io/petclinic/ '.format(ADOP_HOST), 'tab': ''},
-    'cucumber': {'page': 'http://{}/jenkins/job/MDC/job/DEMO/job/Reference_Application_Regression_Tests/2/cucumber-html-reports/feature-overview.html'.format(ADOP_HOST), 'tab': ''},
-    'gattling': {'page': 'http://{}/jenkins/job/MDC/job/DEMO/job/Reference_Application_Performance_Tests/gatling/'.format(ADOP_HOST), 'tab': ''},
-    'sonarq': {'page': 'http://{}/sonar/dashboard/index/1 '.format(ADOP_HOST), 'tab': ''}
+    'adop': {'page': 'http://{}:{}@{}/'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
+    'jenkins': {'page': 'http://{}:{}@{}/jenkins'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
+    'pipeline': {'page': 'http://{}:{}@{}/jenkins/job/MDC/job/DEMO/view/Java_Reference_Application/?auto_refresh=true'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
+    'gerrit': {'page': 'http://{}:{}@{}/gerrit/#/admin/projects/MDC/DEMO/demo-base-spring-petclinic'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
+    'projectdemo': {'page': 'http://{}:{}@{}'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
+    'deploy': {'page': 'http://{}:{}@mdc_demo_ci.{}.nip.io/petclinic/ '.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
+    'prodA': {'page': 'http://{}:{}@mdc_demo_proda.{}.nip.io/petclinic/ '.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
+    'prodB': {'page': 'http://{}:{}@mdc_demo_prodb.{}.nip.io/petclinic/ '.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
+    'cucumber': {'page': 'http://{}:{}@{}/jenkins/job/MDC/job/DEMO/job/Reference_Application_Regression_Tests/2/cucumber-html-reports/feature-overview.html'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
+    'gattling': {'page': 'http://{}:{}@{}/jenkins/job/MDC/job/DEMO/job/Reference_Application_Performance_Tests/gatling/'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
+    'sonarq': {'page': 'http://{}:{}@{}/sonar/dashboard/index/1 '.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''}
 }
 
 # Initialize
@@ -57,6 +73,9 @@ def open_adop():
         if ( index is 0 ):
             driver.get(value['page'])
             value['tab'] = driver.window_handles[index]
+            actions = ActionChains(driver)
+            actions.send_keys('hola')
+            actions.perform()
         else:
             pageScript = 'window.open("{}", "_blank");';
             driver.execute_script(pageScript.format(value['page']))
