@@ -67,7 +67,6 @@ pages = {
     'jenkins': {'page': 'http://{}:{}@{}/jenkins'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
     'pipeline': {'page': 'http://{}:{}@{}/jenkins/job/MDC/job/DEMO/view/Java_Reference_Application/?auto_refresh=true'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
     'gerrit': {'page': 'http://{}:{}@{}/gerrit/#/admin/projects/MDC/DEMO/demo-base-spring-petclinic'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
-    'projectdemo': {'page': 'http://{}:{}@{}'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
     'deploy': {'page': 'http://{}:{}@mdc_demo_ci.{}.nip.io/petclinic/ '.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
     'prodA': {'page': 'http://{}:{}@mdc_demo_proda.{}.nip.io/petclinic/ '.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
     'prodB': {'page': 'http://{}:{}@mdc_demo_prodb.{}.nip.io/petclinic/ '.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
@@ -96,7 +95,9 @@ def random_ok_message():
     messages = [
         "Got It!",
         "It's already on screen",
-        "There you go"
+        "There you go",
+        "Done",
+        "All right"
     ]
     return random.choice(messages)
 
@@ -204,6 +205,53 @@ def gerrit_intent():
         return statement(random_ok_message())
     return statement(status['message'])
 
+@ask.intent("Cucumber")
+def gerrit_intent():
+    status = validateDriver();
+    if ( status['status'] is True ):
+        driver.switch_to_window(pages['cucumber']['tab'])
+        return statement(random_ok_message())
+    return statement(status['message'])
+
+@ask.intent("Gattling")
+def gerrit_intent():
+    status = validateDriver();
+    if ( status['status'] is True ):
+        driver.switch_to_window(pages['gattling']['tab'])
+        return statement(random_ok_message())
+    return statement(status['message'])
+
+@ask.intent("Sonarqube")
+def gerrit_intent():
+    status = validateDriver();
+    if ( status['status'] is True ):
+        driver.switch_to_window(pages['sonarq']['tab'])
+        return statement(random_ok_message())
+    return statement(status['message'])
+
+@ask.intent("ProdA")
+def gerrit_intent():
+    status = validateDriver();
+    if ( status['status'] is True ):
+        driver.switch_to_window(pages['prodA']['tab'])
+        return statement(random_ok_message())
+    return statement(status['message'])
+
+@ask.intent("ProdB")
+def gerrit_intent():
+    status = validateDriver();
+    if ( status['status'] is True ):
+        driver.switch_to_window(pages['prodB']['tab'])
+        return statement(random_ok_message())
+    return statement(status['message'])
+
+@ask.intent("Deploy")
+def gerrit_intent():
+    status = validateDriver();
+    if ( status['status'] is True ):
+        driver.switch_to_window(pages['deploy']['tab'])
+        return statement(random_ok_message())
+    return statement(status['message'])
 
 if __name__ == '__main__':
     open_adop()
