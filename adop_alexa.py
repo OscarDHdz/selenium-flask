@@ -9,6 +9,8 @@ import random
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
+
 # Arguments
 import argparse
 import sys
@@ -18,7 +20,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--host", help="ADOP public IP")
 parser.add_argument("--user", help="ADOP username")
 parser.add_argument("--password", help="ADOP password")
-parser.add_argument("--driver", help="Specify chrome/firefox/firefox-msl")
+parser.add_argument("--driver", help="Specify chrome/firefox/firefox-esr")
 args = parser.parse_args()
 #Validations
 if args.host:
@@ -39,7 +41,7 @@ else:
 if args.driver:
     print ("Using driver:", args.driver)
 else:
-    print ("Missing [--driver chrome|firerfox|firefox-msl] flag:", args.driver)
+    print ("Missing [--driver chrome|firerfox|firefox-esr] flag:", args.driver)
     sys.exit(0)
 
 
@@ -56,6 +58,8 @@ ADOP_HOST = args.host
 ADOP_USER = args.user
 ADOP_PASS = args.password
 SELENIUM_DRIVER = args.driver
+BINARY = FirefoxBinary("/usr/lib/firefox-esr/firefox-esr")
+
 
 # Pages that will be opened at Browser
 pages = {
@@ -81,8 +85,8 @@ def set_driver(selected_driver):
     elif ( selected_driver == "firefox"):
         driver = webdriver.Firefox()
         return True;
-    elif ( selected_driver == "firefox-msl"):
-        driver = webdriver.Firefox()
+    elif ( selected_driver == "firefox-esr"):
+        driver = webdriver.Firefox(firefox_binary=BINARY)
         return True;
     else:
         return False
@@ -103,7 +107,7 @@ def open_adop():
 
     # Set web driver
     if ( set_driver(SELENIUM_DRIVER) is False ):
-        print ("Invalid WebDriver. Please use [chrome|firefox|firefox-msl].")
+        print ("Invalid WebDriver. Please use [chrome|firefox|firefox-esr].")
         sys.exit(0)
 
     # Open Brwoser with all tabs and bind 'tabs' to each 'page'

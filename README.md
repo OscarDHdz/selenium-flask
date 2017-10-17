@@ -22,7 +22,7 @@ This is an static skill that will load ADOP's demo in selected driver, and basic
 
 Execute with:
 ```
-py adop_alexa.py --host [ADOPHost] --user [ADOPUsername] --password [ADOPUserPasword] --driver [chrome|firefox|firefox-msl]
+py adop_alexa.py --host [ADOPHost] --user [ADOPUsername] --password [ADOPUserPasword] --driver [chrome|firefox|firefox-esr]
 ```
 
 For defining Alexa's Schema, copy content from `Alexa_Skill.md` in I'ts respective place.
