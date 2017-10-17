@@ -4,7 +4,7 @@ from flask_ask import Ask, statement, question, session
 import json
 import requests
 import time
-import unidecode
+import random
 # Selenium dependencies
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -18,6 +18,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--host", help="ADOP public IP")
 parser.add_argument("--user", help="ADOP username")
 parser.add_argument("--password", help="ADOP password")
+parser.add_argument("--driver", help="Specify chrome/firefox/firefox-msl")
 args = parser.parse_args()
 #Validations
 if args.host:
@@ -35,6 +36,12 @@ if args.password:
 else:
     print ("Missing [--password] flag:", args.password)
     sys.exit(0)
+if args.driver:
+    print ("Using driver:", args.driver)
+else:
+    print ("Missing [--driver chrome|firerfox|firefox-msl] flag:", args.driver)
+    sys.exit(0)
+
 
 sys.stdout.flush()
 
@@ -48,7 +55,9 @@ tabs = None
 ADOP_HOST = args.host
 ADOP_USER = args.user
 ADOP_PASS = args.password
+SELENIUM_DRIVER = args.driver
 
+# Pages that will be opened at Browser
 pages = {
     'adop': {'page': 'http://{}:{}@{}/'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
     'jenkins': {'page': 'http://{}:{}@{}/jenkins'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
@@ -58,18 +67,48 @@ pages = {
     'deploy': {'page': 'http://{}:{}@mdc_demo_ci.{}.nip.io/petclinic/ '.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
     'prodA': {'page': 'http://{}:{}@mdc_demo_proda.{}.nip.io/petclinic/ '.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
     'prodB': {'page': 'http://{}:{}@mdc_demo_prodb.{}.nip.io/petclinic/ '.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
-    'cucumber': {'page': 'http://{}:{}@{}/jenkins/job/MDC/job/DEMO/job/Reference_Application_Regression_Tests/2/cucumber-html-reports/feature-overview.html'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
+    'cucumber': {'page': 'http://{}:{}@{}/jenkins/job/MDC/job/DEMO/job/Reference_Application_Regression_Tests/1/cucumber-html-reports/feature-overview.html'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
     'gattling': {'page': 'http://{}:{}@{}/jenkins/job/MDC/job/DEMO/job/Reference_Application_Performance_Tests/gatling/'.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''},
     'sonarq': {'page': 'http://{}:{}@{}/sonar/dashboard/index/1 '.format(ADOP_USER, ADOP_PASS, ADOP_HOST), 'tab': ''}
 }
+
+# Set Driver function
+def set_driver(selected_driver):
+    global driver
+    if ( selected_driver == "chrome" ):
+        driver = webdriver.Chrome()
+        return True;
+    elif ( selected_driver == "firefox"):
+        driver = webdriver.Firefox()
+        return True;
+    elif ( selected_driver == "firefox-msl"):
+        driver = webdriver.Firefox()
+        return True;
+    else:
+        return False
+
+# Return a random Success Message
+def random_ok_message():
+    messages = [
+        "Got It!",
+        "It's already on screen",
+        "There you go"
+    ]
+    return random.choice(messages)
 
 # Initialize
 def open_adop():
     global driver
     global tabs
-    driver = webdriver.Chrome()
-    # Open pages
+
+    # Set web driver
+    if ( set_driver(SELENIUM_DRIVER) is False ):
+        print ("Invalid WebDriver. Please use [chrome|firefox|firefox-msl].")
+        sys.exit(0)
+
+    # Open Brwoser with all tabs and bind 'tabs' to each 'page'
     for index, (key, value) in enumerate(pages.items()):
+        time.sleep(1)
         if ( index is 0 ):
             driver.get(value['page'])
             value['tab'] = driver.window_handles[index]
@@ -82,7 +121,7 @@ def open_adop():
             value['tab'] = driver.window_handles[index]
     tabs = driver.window_handles
 
-
+# Validate current statos function. Avoid missing driver conection lost
 def validateDriver():
     global driver
     if ( driver is None ):
@@ -94,32 +133,33 @@ def validateDriver():
     return {'status': True, 'message': 'Driver initiated'}
 
 
+### Endpoints available at your browser ----------------------------------------
 @app.route('/')
 def homepage():
-    return "Hi there, how you doin?"
+    return jsonify(pages)
 
-@app.route('/pages', methods=['GET'])
+@app.route('/status', methods=['GET'])
 def get_openbrowser():
-    return jsonify(pages)
+    status = validateDriver();
+    return jsonify(status)
 
-@app.route('/switchtab', methods=['GET'])
-def get_switchpage():
-    tab = request.args.get('tab')
-    driver.switch_to_window(tab)
-    return jsonify(pages)
+### Intets available for Alexa. Alexa MUST aknowledge each of these Intents it
+###   Her Schema
 
+# This intent is displayed if you only call for teh aleksa skill
 @ask.launch
 def start_skill():
-    welcome_message="Hello there, what you want me to do?"
-    return question(welcome_message)
+    welcome_message="Hello there, right now you should be able to see ADOP demo. If not, ask me to Initialize demo"
+    return statement(welcome_message)
 
-# @ask.intent("Initialize")
-# def init_intent():
-#     status = validateDriver();
-#     if ( status['status'] is False ):
-#         #open_adop()
-#         return statement("Its Opening!")
-#     return statement("It's already open")
+# Initialize will re-open DEMO. Use onl if closed original browser
+@ask.intent("Initialize")
+def init_intent():
+    status = validateDriver();
+    if ( status['status'] is False ):
+        open_adop()
+        return statement(random_ok_message())
+    return statement("It's already open")
 
 
 @ask.intent("Status")
@@ -133,13 +173,15 @@ def platform_intent():
     status = validateDriver();
     if ( status['status'] is True ):
         driver.switch_to_window(pages['adop']['tab'])
-        return statement(status['message'])
+        return statement(random_ok_message())
+    return statement(status['message'])
 
 @ask.intent("Pipeline")
 def pipeline_intent():
     status = validateDriver();
     if ( status['status'] is True ):
         driver.switch_to_window(pages['pipeline']['tab'])
+        return statement(random_ok_message())
     return statement(status['message'])
 
 @ask.intent("Jenkins")
@@ -147,6 +189,7 @@ def jenkins_intent():
     status = validateDriver();
     if ( status['status'] is True ):
         driver.switch_to_window(pages['jenkins']['tab'])
+        return statement(random_ok_message())
     return statement(status['message'])
 
 @ask.intent("Gerrit")
@@ -154,20 +197,9 @@ def gerrit_intent():
     status = validateDriver();
     if ( status['status'] is True ):
         driver.switch_to_window(pages['gerrit']['tab'])
+        return statement(random_ok_message())
     return statement(status['message'])
 
-
-
-@ask.intent("NewTab")
-def newtab_intent():
-    global driver
-    global tabs
-    status = validateDriver();
-    if ( status['status'] is False ):
-        return statement(status['message'])
-    driver.execute_script('''window.open("", "_blank");''');
-    tabs = driver.window_handles
-    return statement("Opening new tab...")
 
 if __name__ == '__main__':
     open_adop()
