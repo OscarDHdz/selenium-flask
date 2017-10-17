@@ -18,4 +18,18 @@ If you just want to test controlling a browser with RESTful GET calls. Execute `
 
 
 ## ADOP DEMO (Flask-Ask-Selenium)
-On It...
+This is an static skill that will load ADOP's demo in selected driver, and basically Alexa will only switch between tabs.   
+
+Execute with:
+```
+py adop_alexa.py --host [ADOPHost] --user [ADOPUsername] --password [ADOPUserPasword] --driver [chrome|firefox|firefox-msl]
+```
+
+For defining Alexa's Schema, copy content from `Alexa_Skill.md` in I'ts respective place.
+
+Once everything is set up, you can call for the following Intents:
+* Pipeline...
+* ...
+
+And if you accidentally close web driver, you can call for:
+* **Initialize** - To re-load ADOP demo in a new driver _(aka. window)_.
